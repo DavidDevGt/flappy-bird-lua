@@ -7,7 +7,7 @@ local gameState = "menu"
 
 function love.load()
     love.window.setMode(config.playingAreaWidth, config.playingAreaHeight, { resizable = false })
-    love.window.setTitle("Juego con Menú Principal - LÖVE2D")
+    love.window.setTitle("FlappyBird - LÖVE2D")
 
     font = love.graphics.newFont(24)
     love.graphics.setFont(font)
@@ -16,10 +16,13 @@ function love.load()
 end
 
 function love.update(dt)
-    if gameState == "game" then
+    if gameState == "menu" then
+        menu.update(dt)
+    elseif gameState == "game" then
         gameState = game.update(dt)
     end
 end
+
 
 function love.keypressed(key)
     if gameState == "menu" then
