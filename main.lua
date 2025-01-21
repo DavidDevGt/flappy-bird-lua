@@ -1,6 +1,7 @@
 local config = require("config")
 local menu = require("menu")
 local game = require("game")
+local spriteManager = require("sprite_manager")
 
 local font
 local gameState = "menu"
@@ -11,7 +12,7 @@ function love.load()
 
     font = love.graphics.newFont(24)
     love.graphics.setFont(font)
-
+    spriteManager.load()
     game.load()
 end
 

@@ -1,10 +1,19 @@
 local game = {}
 local config = require("config")
+local spriteManager = require("sprite_manager")
 
 local birdX, birdY, birdWidth, birdHeight
 local pipe1X, pipe1SpaceY, pipe2X, pipe2SpaceY
 local birdYSpeed
 local score, upcomingPipe
+local backgroundSprite, birdSprite
+
+local birdHitboxWidth = 10
+local birdHitboxHeight = 10
+
+-- Offsets para centrar el hitbox dentro del sprite
+local birdHitboxOffsetX = 3
+local birdHitboxOffsetY = 3
 
 local function newPipeSpaceY()
     local pipeSpaceYMin = 54
@@ -32,6 +41,9 @@ function game.load()
     birdX = config.bird.x
     birdWidth = config.bird.width
     birdHeight = config.bird.height
+    backgroundSprite = spriteManager.get("background")
+    birdSprite = spriteManager.get("bird")
+
     game.reset()
 end
 
@@ -51,12 +63,16 @@ function game.update(dt)
     pipe1X, pipe1SpaceY = movePipe(pipe1X, pipe1SpaceY)
     pipe2X, pipe2SpaceY = movePipe(pipe2X, pipe2SpaceY)
 
+    -- Detectar colisiones del bird con las pipes usando el hitbox ajustado
     local function isBirdCollidingWithPipe(pipeX, pipeSpaceY)
+        local birdHitboxX = birdX + birdHitboxOffsetX
+        local birdHitboxY = birdY + birdHitboxOffsetY
+
         return
-            birdX < (pipeX + config.pipe.width) and
-            (birdX + birdWidth) > pipeX and
-            (birdY < pipeSpaceY or
-            (birdY + birdHeight) > (pipeSpaceY + config.pipe.spaceHeight))
+            birdHitboxX < (pipeX + config.pipe.width) and
+            (birdHitboxX + birdHitboxWidth) > pipeX and
+            (birdHitboxY < pipeSpaceY or
+            (birdHitboxY + birdHitboxHeight) > (pipeSpaceY + config.pipe.spaceHeight))
     end
 
     if isBirdCollidingWithPipe(pipe1X, pipe1SpaceY)
@@ -86,15 +102,24 @@ function game.keypressed(key)
 end
 
 function game.draw()
-    -- Background
-    love.graphics.setColor(0.14, 0.36, 0.46)
-    love.graphics.rectangle('fill', 0, 0, config.playingAreaWidth, config.playingAreaHeight)
+    -- Dibujar el fondo
+    love.graphics.draw(backgroundSprite, 0, 0)
 
-    -- Bird
-    love.graphics.setColor(0.87, 0.84, 0.27)
-    love.graphics.rectangle('fill', birdX, birdY, birdWidth, birdHeight)
+    -- Dibujar el bird
+    love.graphics.draw(birdSprite, birdX, birdY)
 
-    --- Pipes
+    -- Dibujar el hitbox del bird para depuración
+    -- love.graphics.setColor(1, 0, 0, 0.5) -- Rojo con transparencia
+    -- love.graphics.rectangle(
+    --     "fill",
+    --     birdX + birdHitboxOffsetX,
+    --     birdY + birdHitboxOffsetY,
+    --     birdHitboxWidth,
+    --     birdHitboxHeight
+    -- )
+    -- love.graphics.setColor(1, 1, 1)
+
+    -- Dibujar las pipes
     local function drawPipe(pipeX, pipeSpaceY)
         love.graphics.setColor(0.37, 0.82, 0.28)
         love.graphics.rectangle('fill', pipeX, 0, config.pipe.width, pipeSpaceY)
@@ -110,7 +135,7 @@ function game.draw()
     drawPipe(pipe1X, pipe1SpaceY)
     drawPipe(pipe2X, pipe2SpaceY)
 
-    -- Score
+    -- Dibujar el puntaje
     love.graphics.setColor(1, 1, 1)
     love.graphics.print("Score: " .. score, 15, 15)
 end
